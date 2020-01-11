@@ -25,8 +25,8 @@ class Point(context: Context) :BaseShape(context){
 
     override fun setup() {
         pointBuffer = asFloatBuffer(point)
-        val vertexShader = loadVertexShaderAssets(context,"point.vert")
-        val fragShader = loadFragShaderAssets(context,"point.frag")
+        val vertexShader = loadVertexShaderAssets(context,"\n\n\n//点的定点着色器代码\nattribute vec4 vPosition;\nvoid main(){\n    gl_Position = vPosition;\n    gl_PointSize = 30.0;\n}\n\n")
+        val fragShader = loadFragShaderAssets(context,"\n\nprecision mediump float;\nuniform vec4 vColor;\nvoid main(){\n    gl_FragColor = vColor;\n}")
         program = glCreateProgram(vertexShader,fragShader)
     }
 

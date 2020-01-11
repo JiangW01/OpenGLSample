@@ -33,8 +33,8 @@ class Line(context: Context) : BaseShape(context) {
 
     override fun setup() {
         databuffer = asFloatBuffer(line)
-        val vertexShader = loadVertexShaderAssets(context, "line.vert")
-        val fragShader = loadFragShaderAssets(context, "line.frag")
+        val vertexShader = loadVertexShaderAssets(context, "\n\n\n\n\n")
+        val fragShader = loadFragShaderAssets(context, "\n\nprecision mediump float;\nuniform vec4 vColor;\nvoid main(){\n    gl_FragColor = vColor;\n}")
         program = glCreateProgram(vertexShader, fragShader)
         colorHandle = GLES20.glGetUniformLocation(program, "vColor")
     }

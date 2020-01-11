@@ -1,14 +1,12 @@
 package com.opengl.sample.utils
 
 import android.content.Context
+import android.content.res.Resources
 import android.opengl.GLES20
 import android.util.Log
 import java.io.ByteArrayOutputStream
-import java.nio.Buffer
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.FloatBuffer
 import android.opengl.GLES20.GL_LINK_STATUS
+import java.nio.*
 
 
 //每个顶点的坐标数（x,y,z）
@@ -77,6 +75,55 @@ inline fun loadVertexShader(shaderCode: String): Int {
 }
 
 /**
+ * 从Assets加载着色器
+ * @param resources 资源
+ * @param fileName 文件名
+ * @param type  顶点着色 {@link GLES20.GL_VERTEX_SHADER}
+ *              片元着色 {@link GLES20.GL_FRAGMENT_SHADER}
+ * @return 作色器
+ */
+inline fun loadShaderAssets(resources: Resources, fileName: String, type: Int): Int {
+    try {
+        val inputStream = resources.assets.open(fileName)
+        var ch = inputStream.read()
+        val baos = ByteArrayOutputStream()
+        while (ch != -1) {
+            baos.write(ch)
+            ch = inputStream.read()
+        }
+        val buff = baos.toByteArray()
+        baos.close()
+        inputStream.close()
+        var result = String(buff)
+        result = result.replace("\\r\\n", "\n")
+        return loadShader(type, result)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return 0
+}
+
+/**
+ * 从Assets加载着色器
+ * @param resources 资源
+ * @param fileName 文件名
+ * @return 作色器
+ */
+inline fun loadVertexShaderAssets(resources: Resources, fileName: String): Int {
+    return loadShaderAssets(resources, fileName, GLES20.GL_VERTEX_SHADER)
+}
+
+/**
+ * 从Assets加载着色器
+ * @param resources 资源
+ * @param fileName 文件名
+ * @return 作色器
+ */
+inline fun loadFragShaderAssets(resources: Resources, fileName: String): Int {
+    return loadShaderAssets(resources, fileName, GLES20.GL_FRAGMENT_SHADER)
+}
+
+/**
  * 加载片元着色器
  * @param shaderCode 着色代码
  * @return 作色器
@@ -107,6 +154,22 @@ inline fun asFloatBuffer(datas: FloatArray): FloatBuffer {
     val buffer = ByteBuffer.allocateDirect(datas.size * BYTES_PRE_FLOAT)
         .order(ByteOrder.nativeOrder())
         .asFloatBuffer()
+        .put(datas)
+    buffer.position(0)
+    return buffer
+}
+inline fun asShortBuffer(datas: ShortArray): ShortBuffer {
+    val buffer = ByteBuffer.allocateDirect(datas.size * BYTES_PRE_FLOAT)
+        .order(ByteOrder.nativeOrder())
+        .asShortBuffer()
+        .put(datas)
+    buffer.position(0)
+    return buffer
+}
+inline fun asIntBuffer(datas: IntArray): IntBuffer {
+    val buffer = ByteBuffer.allocateDirect(datas.size * BYTES_PRE_FLOAT)
+        .order(ByteOrder.nativeOrder())
+        .asIntBuffer()
         .put(datas)
     buffer.position(0)
     return buffer
@@ -167,8 +230,8 @@ inline fun checkCompile(type: Int, shader: Int): Int {
  * @param dataBuffer 数据
  * @param size 数组中每个顶点的坐标数
  * @param type 类型 默认值：GLES20.GL_FLOAT
- * @param normalized  默认值：false
- * @param stride  默认值：size*4
+ * @param normalized  默认值：false 是否标准化
+ * @param stride  默认值：size*4 跨度
  * @return 属性句柄
  */
 inline fun glUseAttribute(
@@ -195,4 +258,21 @@ inline fun glUseUniform4v(program: Int, uniformName: String, datas: FloatArray, 
     GLES20.glUniform4fv(handle, count, datas, offset)
     return handle
 }
+
+
+/**
+ * 使能Uniform属性并赋值
+ * @param program GLES程序
+ * @param uniformName 变量名
+ * @param datas 数据
+ * @param count
+ * @param offset
+ * @return 属性句柄
+ */
+inline fun glUniform4f(program: Int, uniformName: String, x: Float, y: Float, z: Float,w: Float): Int {
+    val handle = GLES20.glGetUniformLocation(program, uniformName)
+    GLES20.glUniform4f(handle, x,y,z,w)
+    return handle
+}
+
 

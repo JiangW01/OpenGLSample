@@ -3,8 +3,6 @@ package com.opengl.sample.shape
 import android.content.Context
 import android.opengl.GLES20
 import com.opengl.sample.utils.*
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.FloatBuffer
 
 /**
@@ -23,7 +21,7 @@ class Triangle(context: Context) : BaseShape(context) {
 
     //数学坐标系
     private val vertexs = floatArrayOf(
-        0.0f, 0.5f, 0.0f,//顶点
+        0f, 0.5f, 0.0f,//顶点
         -0.5f, -0.5f, 0.0f,//左下
         0.5f, -0.5f, 0.0f //右下
     )
@@ -48,8 +46,8 @@ class Triangle(context: Context) : BaseShape(context) {
     override fun setup() {
         //初始化顶点字节缓冲区
         vertexBuffer = asFloatBuffer(vertexs)
-        val vertexShader = loadVertexShaderAssets(context, "triangle.vert")//顶点着色
-        val fragmentShader = loadFragShaderAssets(context, "triangle.frag")//片元着色
+        val vertexShader = loadVertexShaderAssets(context, "\n//普通的着色器代码\nattribute vec4 vPosition;\nuniform mat4 uMVPMatrix;\nvoid main(){\n    gl_Position = uMVPMatrix*vPosition;\n}\n\n//顶点颜色传递给片元颜色\n//attribute vec3 vPosition; //顶点坐标\n//attribute vec4 aColor;//顶点颜色\n//varying  vec4 vColor;//片元颜色\n//void main() {\n//  gl_Position = vec4(vPosition,1);\n// vColor = aColor;//将顶点颜色传给片元\n//}\n\n//带矩阵顶点颜色传递给片元颜色\n//attribute vec3 vPosition; //顶点坐标\n//uniform mat4 uMVPMatrix; //总变换矩阵\n//attribute vec4 aColor;//顶点颜色\n//varying  vec4 vColor;//片元颜色\n//void main() {\n // gl_Position = uMVPMatrix*vec4(vPosition,1);\n // vColor = aColor;//将顶点颜色传给片元\n//}")//顶点着色
+        val fragmentShader = loadFragShaderAssets(context, "\n\n//纯色三角形\nprecision mediump float;\nuniform vec4 vColor;\nvoid main(){\n    gl_FragColor = vColor;\n}\n\n//彩色三角形\n//precision mediump float;\n//varying vec4 vColor;\n//void main(){\n//    gl_FragColor = vColor;\n//}")//片元着色
         program = glCreateProgram(vertexShader, fragmentShader)
     }
 

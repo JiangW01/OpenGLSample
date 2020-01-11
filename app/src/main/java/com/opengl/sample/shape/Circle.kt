@@ -3,8 +3,6 @@ package com.opengl.sample.shape
 import android.content.Context
 import android.opengl.GLES20
 import com.opengl.sample.utils.*
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import kotlin.math.cos
 import kotlin.math.sin
@@ -51,8 +49,8 @@ class Circle(context: Context) : BaseShape(context) {
 
         //初始化顶点字节缓冲区
         vertexBuffer = asFloatBuffer(vertexs)
-        val vertexShader = loadVertexShaderAssets(context, "normalshape.vert")//顶点着色
-        val fragmentShader = loadFragShaderAssets(context, "normalshape.frag")//片元着色
+        val vertexShader = loadVertexShaderAssets(context, "\n\n//顶点着色器代码\nattribute vec4 vPosition;\nvoid main(){\n    gl_Position = vPosition;\n}")//顶点着色
+        val fragmentShader = loadFragShaderAssets(context, "\n\n//片元着色器代码\nprecision mediump float;\nuniform vec4 vColor;\nvoid main(){\n    gl_FragColor = vColor;\n}")//片元着色
         program = glCreateProgram(vertexShader, fragmentShader)
     }
 
