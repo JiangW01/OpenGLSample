@@ -27,7 +27,9 @@ class Line(resources: Resources) : BaseShape(resources) {
 
     override fun render() {
         GLES20.glLineWidth(10f)
-        drawArrays(GL_LINES)
+//        drawArrays(GL_LINES)
+//        drawArrays(GL_LINE_STRIP)
+        drawArrays(GL_LINE_LOOP)
     }
 
 
