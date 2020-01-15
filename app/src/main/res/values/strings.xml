@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">OpenGLSample01</string>
+    <string-array name="shapes">
+        <item>点</item>
+        <item>线</item>
+        <item>三角形</item>
+        <item>正三角形</item>
+        <item>彩色三角形</item>
+        <item>正方形</item>
+        <item>圆形</item>
+        <item>正方体</item>
+        <item>圆锥</item>
+        <item>圆柱</item>
+        <item>球体</item>
+    </string-array>
 </resources>
