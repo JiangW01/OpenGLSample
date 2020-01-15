@@ -3,6 +3,7 @@ package com.opengl.sample.texture
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import android.opengl.Matrix
+import com.opengl.sample.fbo.FrameBufferHelper
 import com.opengl.sample.utils.asFloatBuffer
 import com.opengl.sample.video.decode.utils.getOriginalTextureCo
 import com.opengl.sample.video.decode.utils.getOriginalVertexCo
@@ -16,7 +17,7 @@ import java.nio.FloatBuffer
  * 时间 ：2020/1/10
  * 描述 ：
  */
-open class TextureRender(private val filter: IFliter) : IRender {
+open class FrameBufferRender(private val filter: IFliter) : IRender {
 
     private var program = 0
 
@@ -33,6 +34,7 @@ open class TextureRender(private val filter: IFliter) : IRender {
     private var vertexMatrixHandle = 0
     private var textureMatrixHandle = 0
     private var textureHandle = 0
+    private var frameBufferHelper = FrameBufferHelper()
 
     init {
         vertexBuffer = asFloatBuffer(getOriginalVertexCo())
@@ -57,22 +59,29 @@ open class TextureRender(private val filter: IFliter) : IRender {
     }
 
     override fun render(textureId: Int) {
+        val bindResult = frameBufferHelper.bindFrameBuffer()
+        println("bindResult = $bindResult")
         onClear()
         onUseProgram()
         filter.render(textureId)
         onSetExpandData()
         onBindTexture(textureId)
         onDraw()
+        val unbindResult = frameBufferHelper.unBindFrameBuffer()
+        println("unbindResult = $unbindResult")
     }
 
     override fun sizeChanged(width: Int, height: Int) {
         filter.sizeChanged(width,height)
+        val result = frameBufferHelper.bindFrameBuffer(width,height)
+        println("result = $result")
     }
 
 
     override fun destroy() {
         filter.destroy()
         GLES20.glDeleteProgram(program)
+        frameBufferHelper.destroyFrameBuffer()
     }
 
     private fun onClear() {
@@ -123,6 +132,10 @@ open class TextureRender(private val filter: IFliter) : IRender {
 
     fun setTextureBuffer(textureVertexs: FloatArray) {
         textureBuffer = asFloatBuffer(textureVertexs)
+    }
+
+    fun getFrameBufferTextureId():Int{
+        return frameBufferHelper.getCacheTextureId()
     }
 
 }

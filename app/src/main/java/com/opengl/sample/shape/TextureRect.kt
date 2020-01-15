@@ -57,15 +57,12 @@ class TextureRect(context: Context) : BaseShape(context) {
     override fun setup() {
         //初始化顶点字节缓冲区
         vertexBuffer = asFloatBuffer(vertexs)
-//        indexBuffer = asShortBuffer(indexs)
         textureCooBuffer = asFloatBuffer(textureCoods)
-        textureId = loadTextureFromAssets(context,"",GLES20.GL_REPLACE,GLES20.GL_REPLACE)
-        val vertexShader = loadVertexShaderAssets(context, "\nattribute vec3 vPosition;\nuniform mat4 uMVPMatrix;\nattribute vec2 aTextureCoordinates;\nvarying vec2 vTextureCoordinates;\nvoid main(){\n    gl_Position = uMVPMatrix*vec4(vPosition,1);\n    vTextureCoordinates = aTextureCoordinates;\n}\n\n")//顶点着色
-        val fragmentShader = loadFragShaderAssets(context, "\n\nprecision mediump float;\nuniform sampler2D uTextureUnit;\nvarying vec2 vTextureCoordinates;\nvoid main(){\n    gl_FragColor = texture2D(uTextureUnit,vTextureCoordinates);\n}\n")//片元着色
+        textureId = loadTextureFromAssets(context,"image/image.jpg",GLES20.GL_REPLACE,GLES20.GL_REPLACE)
+        val vertexShader = loadVertexShaderAssets(context, "shader/shape/texture.vert")//顶点着色
+        val fragmentShader = loadFragShaderAssets(context, "shader/shape/texture.frag")//片元着色
         program = glCreateProgram(vertexShader, fragmentShader)
     }
-
-
 
 
     override fun draw(mvpMatrix: FloatArray?) {
@@ -82,12 +79,6 @@ class TextureRect(context: Context) : BaseShape(context) {
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0,vertexs.size/ COORDS_VERTEX_3D)
 
-//        GLES20.glDrawElements(
-//            GLES20.GL_TRIANGLES,
-//            indexs.size,
-//            GLES20.GL_UNSIGNED_SHORT,
-//            indexBuffer
-//        )
         GLES20.glDisableVertexAttribArray(positionHandle)
     }
 }

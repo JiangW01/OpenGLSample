@@ -7,7 +7,7 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.Surface
 import java.lang.ref.WeakReference
-import com.opengl.sample.utils.EGLHelper
+import com.opengl.sample.video.decode.egl.EGLHelper
 
 
 
@@ -91,9 +91,7 @@ class EGLSurfaceView : SurfaceView, SurfaceHolder.Callback {
         this.eglContext = eglContext
     }
 
-    fun getEglContext(): EGLContext? {
-        return eglThread?.getEglContext()
-    }
+
 
     class EGLThread(eglSurfaceView: EGLSurfaceView) : Thread() {
 
@@ -121,7 +119,7 @@ class EGLSurfaceView : SurfaceView, SurfaceHolder.Callback {
             isStart = false
             weakReference.get()?.let {
                 it.surface?.let { surface ->
-                    eglHelper.createGL(surface,it.getEglContext())
+                    eglHelper.createGLESWithSurface(surface)
                 }
             }
             while (true) {
@@ -171,7 +169,7 @@ class EGLSurfaceView : SurfaceView, SurfaceHolder.Callback {
             if (!isStart) {
                 weakReference.get()?.render?.onDrawFrame()
             }
-            eglHelper.eglSwapBuffers()
+            eglHelper.swapBuffers()
         }
 
         fun requestRender() {
@@ -189,12 +187,8 @@ class EGLSurfaceView : SurfaceView, SurfaceHolder.Callback {
         }
 
         fun release() {
-            eglHelper.destroyGL()
+            eglHelper.destroyGLES()
 
-        }
-
-        fun getEglContext(): EGLContext? {
-            return eglHelper.getEglContext()
         }
 
     }

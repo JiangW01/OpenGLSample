@@ -9,9 +9,13 @@ import android.opengl.GLES20
  */
 class FrameBufferHelper {
 
-    private var mFrameTemp :IntArray = IntArray(4)
     private var lastWidth = 0
     private var lastHeight = 0
+
+    private var fboId = 0
+    private var fboTextureId = 0
+    private var renderId = 0
+
 
     /**
      * 创建FrameBuffer
@@ -37,18 +41,18 @@ class FrameBufferHelper {
         wrapS: Int = GLES20.GL_CLAMP_TO_EDGE,
         wrapT: Int = GLES20.GL_CLAMP_TO_EDGE
     ): Int {
-        mFrameTemp = IntArray(4)
         //1. 创建FBO
-        GLES20.glGenFramebuffers(1, mFrameTemp, 0)
+        val frameBufferTemp = IntArray(1)
+        GLES20.glGenFramebuffers(1, frameBufferTemp, 0)
+        fboId = frameBufferTemp[0]
+
         //2. 创建FBO纹理
-        GLES20.glGenTextures(1, mFrameTemp, 1)
+        val textureTemp = IntArray(1)
+        GLES20.glGenTextures(1, textureTemp, 0)
+        fboTextureId = textureTemp[0]
+
         //3. 绑定FBO纹理
-        GLES20.glBindTexture(texType, mFrameTemp[1])
-        //4.绑定一个空的glTexImage2D，方便framebuffer 填充数据
-        GLES20.glTexImage2D(
-            texType, 0, texFormat, width, height,
-            0, texFormat, GLES20.GL_UNSIGNED_BYTE, null
-        )
+        GLES20.glBindTexture(texType, fboTextureId)
         //设置缩小过滤为使用纹理中坐标最接近的一个像素的颜色作为需要绘制的像素颜色
         GLES20.glTexParameteri(texType, GLES20.GL_TEXTURE_MIN_FILTER, minParams)
         //设置放大过滤为使用纹理中坐标最接近的若干个颜色，通过加权平均算法得到需要绘制的像素颜色
@@ -57,18 +61,27 @@ class FrameBufferHelper {
         GLES20.glTexParameteri(texType, GLES20.GL_TEXTURE_WRAP_S, wrapS)
         //设置环绕方向T，截取纹理坐标到[1/2n,1-1/2n]。将导致永远不会与border融合
         GLES20.glTexParameteri(texType, GLES20.GL_TEXTURE_WRAP_T, wrapT)
+        //4.绑定一个空的glTexImage2D，方便framebuffer 填充数据
+        GLES20.glTexImage2D(
+            texType, 0, texFormat, width, height,
+            0, texFormat, GLES20.GL_UNSIGNED_BYTE, null
+        )
 
-        GLES20.glGetIntegerv(GLES20.GL_FRAMEBUFFER_BINDING, mFrameTemp, 3)
         //5. 绑定FBO
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, mFrameTemp[0])
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fboId)
         //6. 把纹理绑定到FBO
         GLES20.glFramebufferTexture2D(
-            GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0,
-            texType, mFrameTemp[1], 0
+            GLES20.GL_FRAMEBUFFER,
+            GLES20.GL_COLOR_ATTACHMENT0,
+            texType,
+            fboTextureId,
+            0
         )
         if (hasRenderBuffer) {
-            GLES20.glGenRenderbuffers(1, mFrameTemp, 2)
-            GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, mFrameTemp[2])
+            val renderTemp = IntArray(1)
+            GLES20.glGenRenderbuffers(1, renderTemp, 0)
+            renderId = renderTemp[0]
+            GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, renderId)
             GLES20.glRenderbufferStorage(
                 GLES20.GL_RENDERBUFFER,
                 GLES20.GL_DEPTH_COMPONENT16,
@@ -79,12 +92,11 @@ class FrameBufferHelper {
                 GLES20.GL_FRAMEBUFFER,
                 GLES20.GL_DEPTH_ATTACHMENT,
                 GLES20.GL_RENDERBUFFER,
-                mFrameTemp[2]
+                renderId
             )
         }
         return GLES20.glGetError()
     }
-
 
 
     /**
@@ -100,16 +112,14 @@ class FrameBufferHelper {
             this.lastWidth = width
             this.lastHeight = height
         }
-        return if (isCreate()) {
-            createFrameBuffer(width, height,hasRenderBuffer)
+        println("fboId = $fboId")
+        return if (fboId == 0) {
+            createFrameBuffer(width, height, hasRenderBuffer)
         } else {
             bindFrameBuffer()
         }
     }
 
-    private fun isCreate():Boolean{
-        return mFrameTemp[0] > 0
-    }
 
 
     /**
@@ -117,8 +127,7 @@ class FrameBufferHelper {
      * @return 绑定结果
      */
     fun bindFrameBuffer(): Int {
-        GLES20.glGetIntegerv(GLES20.GL_FRAMEBUFFER_BINDING, mFrameTemp, 3)
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, mFrameTemp[0])
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fboId)
         return GLES20.glGetError()
     }
 
@@ -126,7 +135,7 @@ class FrameBufferHelper {
      * 取消FrameBuffer绑定
      */
     fun unBindFrameBuffer() {
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, mFrameTemp[3])
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
     }
 
     /**
@@ -134,21 +143,21 @@ class FrameBufferHelper {
      * @return FrameBuffer绘制内容的纹理ID
      */
     fun getCacheTextureId(): Int {
-        return mFrameTemp[1]
+        return fboTextureId
     }
 
     /**
      * 销毁FrameBuffer
      */
     fun destroyFrameBuffer() {
-        GLES20.glDeleteFramebuffers(1, mFrameTemp, 0)
-        GLES20.glDeleteTextures(1, mFrameTemp, 1)
-        if (mFrameTemp[2] > 0) {
-            GLES20.glDeleteRenderbuffers(1, mFrameTemp, 2)
-        }
-        mFrameTemp.forEachIndexed { index, i ->
-            mFrameTemp[index] = 0
-        }
+//        GLES20.glDeleteFramebuffers(1, fboId, 0)
+//        GLES20.glDeleteTextures(1, mFrameTemp, 1)
+//        if (mFrameTemp[2] > 0) {
+//            GLES20.glDeleteRenderbuffers(1, mFrameTemp, 2)
+//        }
+//        mFrameTemp.forEachIndexed { index, i ->
+//            mFrameTemp[index] = 0
+//        }
     }
 
 }

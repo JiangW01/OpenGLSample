@@ -1,9 +1,7 @@
-package com.opengl.sample.utils
+package com.opengl.sample.video.decode.utils
 
 import android.opengl.Matrix
 import com.opengl.sample.texture.ScaleType
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * 作者 ：wangJiang
@@ -40,6 +38,20 @@ inline fun getOriginalTextureCo(): FloatArray {
     )
 }
 
+
+/**
+ * 获取一个新的原始纹理坐标，每次调用，都会重新创建
+ * @return 坐标数组
+ */
+inline fun getOriginalFrameBuffferTextureCo(): FloatArray {
+    return floatArrayOf(
+        0.0f, 0.0f, //left,bottom
+        0.0f, 1.0f, //left ,top
+        1.0f, 0.0f,//right,bottom
+        1.0f, 1.0f //right,top
+    )
+}
+
 /**
  * 根据预览的大小和图像的大小，计算合适的变换矩阵
  * @param matrix  接收变换矩阵的数组
@@ -70,21 +82,51 @@ inline fun getMatrix(
                     orthoM(projection, -1f, 1f, -1f, 1f)
                 }
                 ScaleType.FIT_START -> {
-                    orthoM(projection, -1f, 1f, 1 - 2 * aspectRatio, 1f)
+                    orthoM(
+                        projection,
+                        -1f,
+                        1f,
+                        1 - 2 * aspectRatio,
+                        1f
+                    )
                 }
                 ScaleType.FIT_END -> {
-                    orthoM(projection, -1f, 1f, -1f, -(1 - 2 * aspectRatio))
+                    orthoM(
+                        projection,
+                        -1f,
+                        1f,
+                        -1f,
+                        -(1 - 2 * aspectRatio)
+                    )
                 }
                 ScaleType.FIT_CENTER -> {
-                    orthoM(projection, -1f, 1f, -aspectRatio, aspectRatio)
+                    orthoM(
+                        projection,
+                        -1f,
+                        1f,
+                        -aspectRatio,
+                        aspectRatio
+                    )
                 }
                 ScaleType.CENTER, ScaleType.CENTER_INSIDE -> {
                     var ratioW = (viewWidth / 2f) / (imgWidth / 2f)
                     var ratioH = (viewHeight / 2f) / (imgHeight / 2f)
-                    orthoM(projection, -ratioW, ratioW, -ratioH, ratioH)
+                    orthoM(
+                        projection,
+                        -ratioW,
+                        ratioW,
+                        -ratioH,
+                        ratioH
+                    )
                 }
                 ScaleType.CENTER_CROP -> {
-                    orthoM(projection, -1 / aspectRatio, 1 / aspectRatio, -1f, 1f)
+                    orthoM(
+                        projection,
+                        -1 / aspectRatio,
+                        1 / aspectRatio,
+                        -1f,
+                        1f
+                    )
                 }
             }
         } else {
@@ -95,21 +137,51 @@ inline fun getMatrix(
                     orthoM(projection, -1f, 1f, -1f, 1f)
                 }
                 ScaleType.FIT_START -> {
-                    orthoM(projection, -1f, 2 * aspectRatio - 1, -1f, 1f)
+                    orthoM(
+                        projection,
+                        -1f,
+                        2 * aspectRatio - 1,
+                        -1f,
+                        1f
+                    )
                 }
                 ScaleType.FIT_END -> {
-                    orthoM(projection, 1 - 2 * aspectRatio, 1f, -1f, 1f)
+                    orthoM(
+                        projection,
+                        1 - 2 * aspectRatio,
+                        1f,
+                        -1f,
+                        1f
+                    )
                 }
                 ScaleType.FIT_CENTER -> {
-                    orthoM(projection, -aspectRatio, aspectRatio, -1f, 1f)
+                    orthoM(
+                        projection,
+                        -aspectRatio,
+                        aspectRatio,
+                        -1f,
+                        1f
+                    )
                 }
                 ScaleType.CENTER, ScaleType.CENTER_INSIDE -> {
                     var ratioW = (viewWidth / 2f) / (imgWidth / 2f)
                     var ratioH = (viewHeight / 2f) / (imgHeight / 2f)
-                    orthoM(projection, -ratioW, ratioW, -ratioH, ratioH)
+                    orthoM(
+                        projection,
+                        -ratioW,
+                        ratioW,
+                        -ratioH,
+                        ratioH
+                    )
                 }
                 ScaleType.CENTER_CROP -> {
-                    orthoM(projection, -1f, 1f, -1 / aspectRatio, 1 / aspectRatio)
+                    orthoM(
+                        projection,
+                        -1f,
+                        1f,
+                        -1 / aspectRatio,
+                        1 / aspectRatio
+                    )
                 }
             }
         }
@@ -161,7 +233,15 @@ inline fun setLookAtM(camera: FloatArray) {
  */
 inline fun multiplyMM(result: FloatArray, lhs: FloatArray, rhs: FloatArray) {
     Matrix.multiplyMM(result, 0, lhs, 0, rhs, 0)
-
 }
+
+/**
+ * 设置单位矩阵
+ * @param result 结果矩阵
+ */
+inline fun setIdentityM(result: FloatArray, offset:Int = 0) {
+    Matrix.setIdentityM(result,offset)
+}
+
 
 

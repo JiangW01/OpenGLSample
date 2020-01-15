@@ -1,4 +1,4 @@
-package com.opengl.sample.utils
+package com.opengl.sample.video.decode.utils
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -8,7 +8,6 @@ import android.opengl.GLES20
 import android.opengl.GLUtils
 import android.util.Log
 import java.lang.Exception
-import java.nio.Buffer
 
 /**
  * 作者 ：wangJiang
